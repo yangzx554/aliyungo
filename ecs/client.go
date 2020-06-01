@@ -7,7 +7,6 @@ const DefaultWaitForInterval = 5
 
 // Default timeout value for WaitForXXX method
 const DefaultTimeout = 60
-
 type Client struct {
 	common.Client
 }

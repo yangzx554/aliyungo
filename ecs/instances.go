@@ -1,9 +1,7 @@
 package ecs
 
 import (
-	"time"
 
-	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/util"
 )
 
@@ -19,7 +17,6 @@ const (
 	Stopped  = InstanceStatus("Stopped")
 	Stopping = InstanceStatus("Stopping")
 )
-
 type LockReason string
 
 const (
@@ -213,34 +210,25 @@ func (client *Client) DescribeInstanceAttribute(instanceId string) (instance *In
 	return &response.InstanceAttributesType, err
 }
 
-// Default timeout value for WaitForInstance method
-const InstanceDefaultTimeout = 120
-
 // WaitForInstance waits for instance to given status
-func (client *Client) WaitForInstance(instanceId string, status InstanceStatus, timeout int) error {
-	if timeout <= 0 {
-		timeout = InstanceDefaultTimeout
-	}
-	for {
+func (client *Client) WaitForInstance(instanceId string, strategy util.AttemptStrategy)(status interface{}, err error)  {
+
+	fn := func() (bool,interface{},error) {
+
 		instance, err := client.DescribeInstanceAttribute(instanceId)
 		if err != nil {
-			return err
+			return false, "" , err
 		}
-		if instance.Status == status {
-			//TODO
-			//Sleep one more time for timing issues
-			time.Sleep(DefaultWaitForInterval * time.Second)
-			break
+		if FinalStatus[instance.Status] {
+			return true,instance.Status,nil
 		}
-		timeout = timeout - DefaultWaitForInterval
-		if timeout <= 0 {
-			return common.GetClientErrorFromString("Timeout")
-		}
-		time.Sleep(DefaultWaitForInterval * time.Second)
-
 	}
-	return nil
+
+	status,e1 := util.LoopCall(strategy,fn);
+
+	return status,e1
 }
+
 
 type DescribeInstanceVncUrlArgs struct {
 	RegionId   common.Region

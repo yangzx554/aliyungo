@@ -4,63 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/denverdino/aliyungo/common"
-)
-
-func ExampleClient_DescribeInstanceStatus() {
-	fmt.Printf("DescribeInstanceStatus Example\n")
-
-	args := DescribeInstanceStatusArgs{
-		RegionId: "cn-beijing",
-		ZoneId:   "cn-beijing-b",
-		Pagination: common.Pagination{
-			PageNumber: 1,
-			PageSize:   1,
-		},
-	}
-
-	client := NewTestClient()
-	instanceStatus, _, err := client.DescribeInstanceStatus(&args)
-
-	if err != nil {
-		fmt.Printf("Failed to describe Instance: %s status:%v \n", TestInstanceId, err)
-	} else {
-		for i := 0; i < len(instanceStatus); i++ {
-			fmt.Printf("Instance %s Status: %s \n", instanceStatus[i].InstanceId, instanceStatus[i].Status)
-		}
-	}
-}
-
-func ExampleClient_DescribeInstanceAttribute() {
-	fmt.Printf("DescribeInstanceAttribute Example\n")
-
-	client := NewTestClient()
-
-	instanceAttributeType, err := client.DescribeInstanceAttribute(TestInstanceId)
-
-	if err != nil {
-		fmt.Printf("Failed to describe Instance %s attribute: %v\n", TestInstanceId, err)
-	} else {
-		fmt.Printf("Instance Information\n")
-		fmt.Printf("InstanceId = %s \n", instanceAttributeType.InstanceId)
-		fmt.Printf("InstanceName = %s \n", instanceAttributeType.InstanceName)
-		fmt.Printf("HostName = %s \n", instanceAttributeType.HostName)
-		fmt.Printf("ZoneId = %s \n", instanceAttributeType.ZoneId)
-		fmt.Printf("RegionId = %s \n", instanceAttributeType.RegionId)
-	}
-}
-
-func ExampleClient_DescribeInstanceVncUrl() {
-	fmt.Printf("DescribeInstanceVncUrl Example\n")
-
-	args := DescribeInstanceVncUrlArgs{
-		RegionId:   "cn-beijing",
-		InstanceId: TestInstanceId,
-	}
-
-	client := NewTestClient()
-
-	instanceVncUrl, err := client.DescribeInstanceVncUrl(&args)
 
 	if err != nil {
 		fmt.Printf("Failed to describe Instance %s vnc url: %v \n", TestInstanceId, err)
@@ -107,8 +50,8 @@ func TestECSInstance(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to stop instance %s: %v", TestInstanceId, err)
 	}
-	err = client.WaitForInstance(TestInstanceId, Stopped, 0)
-	if err != nil {
+	status, err := client.WaitForInstance(TestInstanceId, defaultInstanceStrategy)
+	if err != nil || status != Stopped {
 		t.Errorf("Instance %s is failed to stop: %v", TestInstanceId, err)
 	}
 	t.Logf("Instance %s is stopped successfully.", TestInstanceId)
@@ -116,8 +59,8 @@ func TestECSInstance(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to start instance %s: %v", TestInstanceId, err)
 	}
-	err = client.WaitForInstance(TestInstanceId, Running, 0)
-	if err != nil {
+	status, err = client.WaitForInstance(TestInstanceId, defaultInstanceStrategy)
+	if err != nil  || status != Running {
 		t.Errorf("Instance %s is failed to start: %v", TestInstanceId, err)
 	}
 	t.Logf("Instance %s is running successfully.", TestInstanceId)
@@ -125,8 +68,8 @@ func TestECSInstance(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to restart instance %s: %v", TestInstanceId, err)
 	}
-	err = client.WaitForInstance(TestInstanceId, Running, 0)
-	if err != nil {
+	status, err = client.WaitForInstance(TestInstanceId, defaultInstanceStrategy)
+	if err != nil || status != Running {
 		t.Errorf("Instance %s is failed to restart: %v", TestInstanceId, err)
 	}
 	t.Logf("Instance %s is running successfully.", TestInstanceId)
@@ -158,20 +101,36 @@ func TestECSInstanceCreationAndDeletion(t *testing.T) {
 	instance, err = client.DescribeInstanceAttribute(instanceId)
 	t.Logf("Instance: %++v  %v", instance, err)
 
-	err = client.WaitForInstance(instanceId, Stopped, 60)
+	strategy := util.AttemptStrategy{
+		Min:   5,
+		Total: 60 * time.Second,
+		Delay: 5 * time.Second,
+	}
+
+	status, err := client.WaitForInstance(instanceId, strategy)
+
+	if err != nil || status != Stopped {
+		t.Errorf("Instance %s is failed to create: %v", instanceId, err)
+	}
 
 	err = client.StartInstance(instanceId)
 	if err != nil {
 		t.Errorf("Failed to start instance %s: %v", instanceId, err)
 	}
-	err = client.WaitForInstance(instanceId, Running, 0)
+
+	status, err = client.WaitForInstance(instanceId, defaultInstanceStrategy)
+
+	if err != nil || status != Running {
+		t.Errorf("Instance %s is failed to running: %v", instanceId, err)
+	}
 
 	err = client.StopInstance(instanceId, true)
 	if err != nil {
 		t.Errorf("Failed to stop instance %s: %v", instanceId, err)
 	}
-	err = client.WaitForInstance(instanceId, Stopped, 0)
-	if err != nil {
+	status, err = client.WaitForInstance(instanceId, defaultInstanceStrategy)
+
+	if err != nil  || status != Stopped {
 		t.Errorf("Instance %s is failed to stop: %v", instanceId, err)
 	}
 	t.Logf("Instance %s is stopped successfully.", instanceId)

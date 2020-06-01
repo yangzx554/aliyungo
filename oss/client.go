@@ -37,6 +37,7 @@ type Client struct {
 	Secure          bool
 	ConnectTimeout  time.Duration
 
+
 	endpoint string
 	debug    bool
 }
@@ -946,7 +947,7 @@ func (client *Client) setBaseURL(req *request) error {
 	if client.endpoint == "" {
 		req.baseurl = client.Region.GetEndpoint(client.Internal, req.bucket, client.Secure)
 	} else {
-		req.baseurl = fmt.Sprintf("%s://%s", getProtocol(client.Secure), client.endpoint)
+
 	}
 
 	return nil
