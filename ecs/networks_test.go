@@ -2,11 +2,13 @@ package ecs
 
 import (
 	"testing"
+
+	"github.com/denverdino/aliyungo/common"
 )
 
 func TestAllocatePublicIpAddress(t *testing.T) {
 
-	client := NewClient(TestAccessKeyId, TestAccessKeySecret)
+	client := NewTestClient()
 	instance, err := client.DescribeInstanceAttribute(TestInstanceId)
 	if err != nil {
 		t.Fatalf("Failed to describe instance %s: %v", TestInstanceId, err)
@@ -20,12 +22,12 @@ func TestAllocatePublicIpAddress(t *testing.T) {
 
 }
 
-func testEipAddress(t *testing.T, client *Client, regionId Region, instanceId string) error {
+func testEipAddress(t *testing.T, client *Client, regionId common.Region, instanceId string) error {
 
 	args := AllocateEipAddressArgs{
 		RegionId:           regionId,
 		Bandwidth:          5,
-		InternetChargeType: PayByTraffic,
+		InternetChargeType: common.PayByTraffic,
 		ClientToken:        client.GenerateClientToken(),
 	}
 	ipAddr, allocationId, err := client.AllocateEipAddress(&args)

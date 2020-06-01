@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
-	"strconv"
 	"time"
 	"errors"
 )
@@ -18,14 +17,28 @@ const (
 	StatusUnKnown     = "NA"
 )
 
+const dictionary = "_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
 //CreateRandomString create random string
 func CreateRandomString() string {
+	b := make([]byte, 32)
+	l := len(dictionary)
 
-	rand.Seed(time.Now().UnixNano())
-	randInt := rand.Int63()
-	randStr := strconv.FormatInt(randInt, 36)
+	_, err := srand.Read(b)
 
-	return randStr
+	if err != nil {
+		// fail back to insecure rand
+		rand.Seed(time.Now().UnixNano())
+		for i := range b {
+			b[i] = dictionary[rand.Int()%l]
+		}
+	} else {
+		for i, v := range b {
+			b[i] = dictionary[v%byte(l)]
+		}
+	}
+
+	return string(b)
 }
 
 // Encode encodes the values into ``URL encoded'' form

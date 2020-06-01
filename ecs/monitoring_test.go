@@ -1,13 +1,14 @@
 package ecs
 
 import (
-	"github.com/denverdino/aliyungo/util"
 	"testing"
 	"time"
+
+	"github.com/denverdino/aliyungo/util"
 )
 
 func TestMonitoring(t *testing.T) {
-	client := NewClient(TestAccessKeyId, TestAccessKeySecret)
+	client := NewTestClient()
 	//client.SetDebug(true)
 
 	//Describe test instance

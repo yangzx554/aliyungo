@@ -1,6 +1,7 @@
 package ecs
 
 import (
+	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/util"
 )
 
@@ -18,24 +19,26 @@ const (
 
 // DescribeImagesArgs repsents arguements to describe images
 type DescribeImagesArgs struct {
-	RegionId        Region
+	RegionId        common.Region
 	ImageId         string
 	SnapshotId      string
 	ImageName       string
 	ImageOwnerAlias ImageOwnerAlias
-	Pagination
+	common.Pagination
 }
 
 type DescribeImagesResponse struct {
-	CommonResponse
+	common.Response
+	common.PaginationResult
 
-	Pagination string
-	PaginationResult
-	Images struct {
+	RegionId common.Region
+	Images   struct {
 		Image []ImageType
 	}
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&diskdevicemapping
 type DiskDeviceMapping struct {
 	SnapshotId string
 	//Why Size Field is string-type.
@@ -52,6 +55,8 @@ const (
 	ImageStatusCreateFailed = ImageStatus("CreateFailed")
 )
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&imagetype
 type ImageType struct {
 	ImageId            string
 	ImageVersion       string
@@ -72,9 +77,11 @@ type ImageType struct {
 }
 
 // DescribeImages describes images
-func (client *Client) DescribeImages(args *DescribeImagesArgs) (images []ImageType, pagination *PaginationResult, err error) {
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/image&describeimages
+func (client *Client) DescribeImages(args *DescribeImagesArgs) (images []ImageType, pagination *common.PaginationResult, err error) {
 
-	args.validate()
+	args.Validate()
 	response := DescribeImagesResponse{}
 	err = client.Invoke("DescribeImages", args, &response)
 	if err != nil {
@@ -85,7 +92,7 @@ func (client *Client) DescribeImages(args *DescribeImagesArgs) (images []ImageTy
 
 // CreateImageArgs repsents arguements to create image
 type CreateImageArgs struct {
-	RegionId     Region
+	RegionId     common.Region
 	SnapshotId   string
 	ImageName    string
 	ImageVersion string
@@ -94,12 +101,14 @@ type CreateImageArgs struct {
 }
 
 type CreateImageResponse struct {
-	CommonResponse
+	common.Response
 
 	ImageId string
 }
 
 // CreateImage creates a new image
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/image&createimage
 func (client *Client) CreateImage(args *CreateImageArgs) (imageId string, err error) {
 	response := &CreateImageResponse{}
 	err = client.Invoke("CreateImage", args, &response)
@@ -110,16 +119,18 @@ func (client *Client) CreateImage(args *CreateImageArgs) (imageId string, err er
 }
 
 type DeleteImageArgs struct {
-	RegionId Region
+	RegionId common.Region
 	ImageId  string
 }
 
 type DeleteImageResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // DeleteImage deletes Image
-func (client *Client) DeleteImage(regionId Region, imageId string) error {
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/image&deleteimage
+func (client *Client) DeleteImage(regionId common.Region, imageId string) error {
 	args := DeleteImageArgs{
 		RegionId: regionId,
 		ImageId:  imageId,

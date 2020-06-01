@@ -1,21 +1,46 @@
 package ecs
 
 import (
+	"fmt"
 	"testing"
-	"github.com/denverdino/aliyungo/util"
-	"time"
-)
 
-var defaultInstanceStrategy = util.AttemptStrategy{
-		Min:   5,
-		Total: 120 * time.Second,
-		Delay: 5 * time.Second,
+
+	if err != nil {
+		fmt.Printf("Failed to describe Instance %s vnc url: %v \n", TestInstanceId, err)
+	} else {
+		fmt.Printf("VNC URL = %s \n", instanceVncUrl)
 	}
+}
 
+func ExampleClient_StopInstance() {
+	fmt.Printf("Stop Instance Example\n")
+
+	client := NewTestClient()
+
+	err := client.StopInstance(TestInstanceId, true)
+
+	if err != nil {
+		fmt.Printf("Failed to stop Instance %s vnc url: %v \n", TestInstanceId, err)
+	}
+}
+
+func ExampleClient_DeleteInstance() {
+	fmt.Printf("Delete Instance Example")
+
+	client := NewTestClient()
+
+	err := client.DeleteInstance(TestInstanceId)
+
+	if err != nil {
+		fmt.Printf("Failed to delete Instance %s vnc url: %v \n", TestInstanceId, err)
+	}
+}
 
 func TestECSInstance(t *testing.T) {
-
-	client := NewClient(TestAccessKeyId, TestAccessKeySecret)
+	if TestQuick {
+		return
+	}
+	client := NewTestClient()
 	instance, err := client.DescribeInstanceAttribute(TestInstanceId)
 	if err != nil {
 		t.Fatalf("Failed to describe instance %s: %v", TestInstanceId, err)
@@ -56,7 +81,7 @@ func TestECSInstanceCreationAndDeletion(t *testing.T) {
 		return
 	}
 
-	client := NewClient(TestAccessKeyId, TestAccessKeySecret)
+	client := NewTestClient()
 	instance, err := client.DescribeInstanceAttribute(TestInstanceId)
 	t.Logf("Instance: %++v  %v", instance, err)
 

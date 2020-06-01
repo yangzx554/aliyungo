@@ -1,6 +1,7 @@
 package ecs
 
 import (
+	"github.com/denverdino/aliyungo/common"
 	"github.com/denverdino/aliyungo/util"
 )
 
@@ -30,10 +31,12 @@ const (
 
 type DescribeSecurityGroupAttributeArgs struct {
 	SecurityGroupId string
-	RegionId        Region
+	RegionId        common.Region
 	NicType         NicType //enum for internet (default) |intranet
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&permissiontype
 type PermissionType struct {
 	IpProtocol              IpProtocol
 	PortRange               string
@@ -45,11 +48,11 @@ type PermissionType struct {
 }
 
 type DescribeSecurityGroupAttributeResponse struct {
-	CommonResponse
+	common.Response
 
 	SecurityGroupId   string
 	SecurityGroupName string
-	RegionId          Region
+	RegionId          common.Region
 	Description       string
 	Permissions       struct {
 		Permission []PermissionType
@@ -57,6 +60,8 @@ type DescribeSecurityGroupAttributeResponse struct {
 	VpcId string
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/securitygroup&describesecuritygroupattribute
 func (client *Client) DescribeSecurityGroupAttribute(args *DescribeSecurityGroupAttributeArgs) (response *DescribeSecurityGroupAttributeResponse, err error) {
 	response = &DescribeSecurityGroupAttributeResponse{}
 	err = client.Invoke("DescribeSecurityGroupAttribute", args, response)
@@ -67,11 +72,13 @@ func (client *Client) DescribeSecurityGroupAttribute(args *DescribeSecurityGroup
 }
 
 type DescribeSecurityGroupsArgs struct {
-	RegionId Region
+	RegionId common.Region
 	VpcId    string
-	Pagination
+	common.Pagination
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&securitygroupitemtype
 type SecurityGroupItemType struct {
 	SecurityGroupId   string
 	SecurityGroupName string
@@ -81,18 +88,20 @@ type SecurityGroupItemType struct {
 }
 
 type DescribeSecurityGroupsResponse struct {
-	CommonResponse
+	common.Response
+	common.PaginationResult
 
-	PaginationResult
-	RegionId       Region
+	RegionId       common.Region
 	SecurityGroups struct {
 		SecurityGroup []SecurityGroupItemType
 	}
 }
 
 // DescribeSecurityGroups describes security groups
-func (client *Client) DescribeSecurityGroups(args *DescribeSecurityGroupsArgs) (securityGroupItems []SecurityGroupItemType, pagination *PaginationResult, err error) {
-	args.validate()
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/securitygroup&describesecuritygroups
+func (client *Client) DescribeSecurityGroups(args *DescribeSecurityGroupsArgs) (securityGroupItems []SecurityGroupItemType, pagination *common.PaginationResult, err error) {
+	args.Validate()
 	response := DescribeSecurityGroupsResponse{}
 
 	err = client.Invoke("DescribeSecurityGroups", args, &response)
@@ -105,7 +114,7 @@ func (client *Client) DescribeSecurityGroups(args *DescribeSecurityGroupsArgs) (
 }
 
 type CreateSecurityGroupArgs struct {
-	RegionId          Region
+	RegionId          common.Region
 	SecurityGroupName string
 	Description       string
 	VpcId             string
@@ -113,12 +122,14 @@ type CreateSecurityGroupArgs struct {
 }
 
 type CreateSecurityGroupResponse struct {
-	CommonResponse
+	common.Response
 
 	SecurityGroupId string
 }
 
 // CreateSecurityGroup creates security group
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/securitygroup&createsecuritygroup
 func (client *Client) CreateSecurityGroup(args *CreateSecurityGroupArgs) (securityGroupId string, err error) {
 	response := CreateSecurityGroupResponse{}
 	err = client.Invoke("CreateSecurityGroup", args, &response)
@@ -129,16 +140,18 @@ func (client *Client) CreateSecurityGroup(args *CreateSecurityGroupArgs) (securi
 }
 
 type DeleteSecurityGroupArgs struct {
-	RegionId        Region
+	RegionId        common.Region
 	SecurityGroupId string
 }
 
 type DeleteSecurityGroupResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // DeleteSecurityGroup deletes security group
-func (client *Client) DeleteSecurityGroup(regionId Region, securityGroupId string) error {
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/securitygroup&deletesecuritygroup
+func (client *Client) DeleteSecurityGroup(regionId common.Region, securityGroupId string) error {
 	args := DeleteSecurityGroupArgs{
 		RegionId:        regionId,
 		SecurityGroupId: securityGroupId,
@@ -149,17 +162,19 @@ func (client *Client) DeleteSecurityGroup(regionId Region, securityGroupId strin
 }
 
 type ModifySecurityGroupAttributeArgs struct {
-	RegionId          Region
+	RegionId          common.Region
 	SecurityGroupId   string
 	SecurityGroupName string
 	Description       string
 }
 
 type ModifySecurityGroupAttributeResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // ModifySecurityGroupAttribute modifies attribute of security group
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/securitygroup&modifysecuritygroupattribute
 func (client *Client) ModifySecurityGroupAttribute(args *ModifySecurityGroupAttributeArgs) error {
 	response := ModifySecurityGroupAttributeResponse{}
 	err := client.Invoke("ModifySecurityGroupAttribute", args, &response)
@@ -168,7 +183,7 @@ func (client *Client) ModifySecurityGroupAttribute(args *ModifySecurityGroupAttr
 
 type AuthorizeSecurityGroupArgs struct {
 	SecurityGroupId         string
-	RegionId                Region
+	RegionId                common.Region
 	IpProtocol              IpProtocol
 	PortRange               string
 	SourceGroupId           string
@@ -180,10 +195,12 @@ type AuthorizeSecurityGroupArgs struct {
 }
 
 type AuthorizeSecurityGroupResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // AuthorizeSecurityGroup authorize permissions to security group
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/securitygroup&authorizesecuritygroup
 func (client *Client) AuthorizeSecurityGroup(args *AuthorizeSecurityGroupArgs) error {
 	response := AuthorizeSecurityGroupResponse{}
 	err := client.Invoke("AuthorizeSecurityGroup", args, &response)

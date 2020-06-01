@@ -1,8 +1,10 @@
 package ecs
 
 import (
-	"github.com/denverdino/aliyungo/util"
 	"time"
+
+	"github.com/denverdino/aliyungo/common"
+	"github.com/denverdino/aliyungo/util"
 )
 
 type CreateVSwitchArgs struct {
@@ -15,11 +17,13 @@ type CreateVSwitchArgs struct {
 }
 
 type CreateVSwitchResponse struct {
-	CommonResponse
+	common.Response
 	VSwitchId string
 }
 
 // CreateVSwitch creates Virtual Switch
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/vswitch&createvswitch
 func (client *Client) CreateVSwitch(args *CreateVSwitchArgs) (vswitchId string, err error) {
 	response := CreateVSwitchResponse{}
 	err = client.Invoke("CreateVSwitch", args, &response)
@@ -34,10 +38,12 @@ type DeleteVSwitchArgs struct {
 }
 
 type DeleteVSwitchResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // DeleteVSwitch deletes Virtual Switch
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/vswitch&deletevswitch
 func (client *Client) DeleteVSwitch(VSwitchId string) error {
 	args := DeleteVSwitchArgs{
 		VSwitchId: VSwitchId,
@@ -50,8 +56,7 @@ type DescribeVSwitchesArgs struct {
 	VpcId     string
 	VSwitchId string
 	ZoneId    string
-	RegionId  Region
-	Pagination
+	common.Pagination
 }
 
 type VSwitchStatus string
@@ -61,6 +66,8 @@ const (
 	VSwitchStatusAvailable = VSwitchStatus("Available")
 )
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&vswitchsettype
 type VSwitchSetType struct {
 	VSwitchId               string
 	VpcId                   string
@@ -74,16 +81,18 @@ type VSwitchSetType struct {
 }
 
 type DescribeVSwitchesResponse struct {
-	CommonResponse
-	PaginationResult
+	common.Response
+	common.PaginationResult
 	VSwitches struct {
 		VSwitch []VSwitchSetType
 	}
 }
 
 // DescribeVSwitches describes Virtual Switches
-func (client *Client) DescribeVSwitches(args *DescribeVSwitchesArgs) (vswitches []VSwitchSetType, pagination *PaginationResult, err error) {
-	args.validate()
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/vswitch&describevswitches
+func (client *Client) DescribeVSwitches(args *DescribeVSwitchesArgs) (vswitches []VSwitchSetType, pagination *common.PaginationResult, err error) {
+	args.Validate()
 	response := DescribeVSwitchesResponse{}
 
 	err = client.Invoke("DescribeVSwitches", args, &response)
@@ -102,10 +111,12 @@ type ModifyVSwitchAttributeArgs struct {
 }
 
 type ModifyVSwitchAttributeResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // ModifyVSwitchAttribute modifies attribute of Virtual Private Cloud
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/vswitch&modifyvswitchattribute
 func (client *Client) ModifyVSwitchAttribute(args *ModifyVSwitchAttributeArgs) error {
 	response := ModifyVSwitchAttributeResponse{}
 	return client.Invoke("ModifyVSwitchAttribute", args, &response)
@@ -130,7 +141,7 @@ func (client *Client) WaitForVSwitchAvailable(vpcId string, vswitchId string, ti
 		}
 		timeout = timeout - DefaultWaitForInterval
 		if timeout <= 0 {
-			return getECSErrorFromString("Timeout")
+			return common.GetClientErrorFromString("Timeout")
 		}
 		time.Sleep(DefaultWaitForInterval * time.Second)
 	}

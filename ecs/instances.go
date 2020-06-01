@@ -1,6 +1,7 @@
 package ecs
 
 import (
+
 	"github.com/denverdino/aliyungo/util"
 )
 
@@ -16,19 +17,6 @@ const (
 	Stopped  = InstanceStatus("Stopped")
 	Stopping = InstanceStatus("Stopping")
 )
-
-var FinalStatus = map[InstanceStatus]bool {
-	Running: true,
-	Stopped: true,
-}
-
-type InternetChargeType string
-
-const (
-	PayByBandwidth = InternetChargeType("PayByBandwidth")
-	PayByTraffic   = InternetChargeType("PayByTraffic")
-)
-
 type LockReason string
 
 const (
@@ -37,27 +25,31 @@ const (
 )
 
 type DescribeInstanceStatusArgs struct {
-	RegionId Region
+	RegionId common.Region
 	ZoneId   string
-	Pagination
+	common.Pagination
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&instancestatusitemtype
 type InstanceStatusItemType struct {
 	InstanceId string
 	Status     InstanceStatus
 }
 
 type DescribeInstanceStatusResponse struct {
-	CommonResponse
-	PaginationResult
+	common.Response
+	common.PaginationResult
 	InstanceStatuses struct {
 		InstanceStatus []InstanceStatusItemType
 	}
 }
 
 // DescribeInstanceStatus describes instance status
-func (client *Client) DescribeInstanceStatus(args *DescribeInstanceStatusArgs) (instanceStatuses []InstanceStatusItemType, pagination *PaginationResult, err error) {
-	args.validate()
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/instance&describeinstancestatus
+func (client *Client) DescribeInstanceStatus(args *DescribeInstanceStatusArgs) (instanceStatuses []InstanceStatusItemType, pagination *common.PaginationResult, err error) {
+	args.Validate()
 	response := DescribeInstanceStatusResponse{}
 
 	err = client.Invoke("DescribeInstanceStatus", args, &response)
@@ -75,10 +67,12 @@ type StopInstanceArgs struct {
 }
 
 type StopInstanceResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // StopInstance stops instance
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/instance&stopinstance
 func (client *Client) StopInstance(instanceId string, forceStop bool) error {
 	args := StopInstanceArgs{
 		InstanceId: instanceId,
@@ -94,10 +88,12 @@ type StartInstanceArgs struct {
 }
 
 type StartInstanceResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // StartInstance starts instance
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/instance&startinstance
 func (client *Client) StartInstance(instanceId string) error {
 	args := StartInstanceArgs{InstanceId: instanceId}
 	response := StartInstanceResponse{}
@@ -111,10 +107,12 @@ type RebootInstanceArgs struct {
 }
 
 type RebootInstanceResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // RebootInstance reboot instance
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/instance&rebootinstance
 func (client *Client) RebootInstance(instanceId string, forceStop bool) error {
 	request := RebootInstanceArgs{
 		InstanceId: instanceId,
@@ -129,17 +127,26 @@ type DescribeInstanceAttributeArgs struct {
 	InstanceId string
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&operationlockstype
 type OperationLocksType struct {
 	LockReason []LockReason //enum for financial, security
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&securitygroupidsettype
 type SecurityGroupIdSetType struct {
 	SecurityGroupId string
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&ipaddresssettype
 type IpAddressSetType struct {
 	IpAddress []string
 }
+
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&vpcattributestype
 type VpcAttributesType struct {
 	VpcId            string
 	VSwitchId        string
@@ -147,19 +154,23 @@ type VpcAttributesType struct {
 	NatIpAddress     string
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&eipaddressassociatetype
 type EipAddressAssociateType struct {
 	AllocationId       string
 	IpAddress          string
 	Bandwidth          int
-	InternetChargeType InternetChargeType
+	InternetChargeType common.InternetChargeType
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&instanceattributestype
 type InstanceAttributesType struct {
 	InstanceId       string
 	InstanceName     string
 	Description      string
 	ImageId          string
-	RegionId         Region
+	RegionId         common.Region
 	ZoneId           string
 	ClusterId        string
 	InstanceType     string
@@ -174,18 +185,20 @@ type InstanceAttributesType struct {
 	InstanceNetworkType     string //enum Classic | Vpc
 	InternetMaxBandwidthIn  int
 	InternetMaxBandwidthOut int
-	InternetChargeType      InternetChargeType
+	InternetChargeType      common.InternetChargeType
 	CreationTime            util.ISO6801Time //time.Time
 	VpcAttributes           VpcAttributesType
 	EipAddress              EipAddressAssociateType
 }
 
 type DescribeInstanceAttributeResponse struct {
-	CommonResponse
+	common.Response
 	InstanceAttributesType
 }
 
 // DescribeInstanceAttribute describes instance attribute
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/instance&describeinstanceattribute
 func (client *Client) DescribeInstanceAttribute(instanceId string) (instance *InstanceAttributesType, err error) {
 	args := DescribeInstanceAttributeArgs{InstanceId: instanceId}
 
@@ -209,7 +222,6 @@ func (client *Client) WaitForInstance(instanceId string, strategy util.AttemptSt
 		if FinalStatus[instance.Status] {
 			return true,instance.Status,nil
 		}
-		return false, "" , nil
 	}
 
 	status,e1 := util.LoopCall(strategy,fn);
@@ -219,15 +231,17 @@ func (client *Client) WaitForInstance(instanceId string, strategy util.AttemptSt
 
 
 type DescribeInstanceVncUrlArgs struct {
-	RegionId   Region
+	RegionId   common.Region
 	InstanceId string
 }
 
 type DescribeInstanceVncUrlResponse struct {
-	CommonResponse
+	common.Response
 	VncUrl string
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/instance&describeinstancevncurl
 func (client *Client) DescribeInstanceVncUrl(args *DescribeInstanceVncUrlArgs) (string, error) {
 	response := DescribeInstanceVncUrlResponse{}
 
@@ -241,7 +255,7 @@ func (client *Client) DescribeInstanceVncUrl(args *DescribeInstanceVncUrlArgs) (
 }
 
 type DescribeInstancesArgs struct {
-	RegionId            Region
+	RegionId            common.Region
 	VpcId               string
 	VSwitchId           string
 	ZoneId              string
@@ -251,20 +265,22 @@ type DescribeInstancesArgs struct {
 	InnerIpAddresses    string
 	PublicIpAddresses   string
 	SecurityGroupId     string
-	Pagination
+	common.Pagination
 }
 
 type DescribeInstancesResponse struct {
-	CommonResponse
-	PaginationResult
+	common.Response
+	common.PaginationResult
 	Instances struct {
 		Instance []InstanceAttributesType
 	}
 }
 
 // DescribeInstances describes instances
-func (client *Client) DescribeInstances(args *DescribeInstancesArgs) (instances []InstanceAttributesType, pagination *PaginationResult, err error) {
-	args.validate()
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/instance&describeinstances
+func (client *Client) DescribeInstances(args *DescribeInstancesArgs) (instances []InstanceAttributesType, pagination *common.PaginationResult, err error) {
+	args.Validate()
 	response := DescribeInstancesResponse{}
 
 	err = client.Invoke("DescribeInstances", args, &response)
@@ -281,10 +297,12 @@ type DeleteInstanceArgs struct {
 }
 
 type DeleteInstanceResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // DeleteInstance deletes instance
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/instance&deleteinstance
 func (client *Client) DeleteInstance(instanceId string) error {
 	args := DeleteInstanceArgs{InstanceId: instanceId}
 	response := DeleteInstanceResponse{}
@@ -309,14 +327,14 @@ type SystemDiskType struct {
 }
 
 type CreateInstanceArgs struct {
-	RegionId                Region
+	RegionId                common.Region
 	ZoneId                  string
 	ImageId                 string
 	InstanceType            string
 	SecurityGroupId         string
 	InstanceName            string
 	Description             string
-	InternetChargeType      InternetChargeType
+	InternetChargeType      common.InternetChargeType
 	InternetMaxBandwidthIn  int
 	InternetMaxBandwidthOut int
 	HostName                string
@@ -329,11 +347,13 @@ type CreateInstanceArgs struct {
 }
 
 type CreateInstanceResponse struct {
-	CommonResponse
+	common.Response
 	InstanceId string
 }
 
 // CreateInstance creates instance
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/instance&createinstance
 func (client *Client) CreateInstance(args *CreateInstanceArgs) (instanceId string, err error) {
 	response := CreateInstanceResponse{}
 	err = client.Invoke("CreateInstance", args, &response)

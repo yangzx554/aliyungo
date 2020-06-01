@@ -2,11 +2,13 @@ package ecs
 
 import (
 	"testing"
+
+	"github.com/denverdino/aliyungo/common"
 )
 
 func TestSecurityGroups(t *testing.T) {
 
-	client := NewClient(TestAccessKeyId, TestAccessKeySecret)
+	client := NewTestClient()
 	regions, err := client.DescribeRegions()
 
 	t.Log("regions: ", regions, err)
@@ -41,7 +43,7 @@ func TestSecurityGroups(t *testing.T) {
 }
 
 func TestECSSecurityGroupCreationAndDeletion(t *testing.T) {
-	client := NewClient(TestAccessKeyId, TestAccessKeySecret)
+	client := NewTestClient()
 	instance, err := client.DescribeInstanceAttribute(TestInstanceId)
 	if err != nil {
 		t.Fatalf("Failed to describe instance attribute %s: %v", TestInstanceId, err)
@@ -52,7 +54,7 @@ func TestECSSecurityGroupCreationAndDeletion(t *testing.T) {
 
 }
 
-func _testECSSecurityGroupCreationAndDeletion(t *testing.T, client *Client, regionId Region, vpcId string) {
+func _testECSSecurityGroupCreationAndDeletion(t *testing.T, client *Client, regionId common.Region, vpcId string) {
 
 	sgName := "test-security-group"
 	args := CreateSecurityGroupArgs{

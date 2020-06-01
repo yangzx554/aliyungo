@@ -1,8 +1,12 @@
 package ecs
 
+import "github.com/denverdino/aliyungo/common"
+
 type DescribeInstanceTypesArgs struct {
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&instancetypeitemtype
 type InstanceTypeItemType struct {
 	InstanceTypeId string
 	CpuCoreCount   int
@@ -10,13 +14,15 @@ type InstanceTypeItemType struct {
 }
 
 type DescribeInstanceTypesResponse struct {
-	CommonResponse
+	common.Response
 	InstanceTypes struct {
 		InstanceType []InstanceTypeItemType
 	}
 }
 
 // DescribeInstanceTypes describes all instance types
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/other&describeinstancetypes
 func (client *Client) DescribeInstanceTypes() (instanceTypes []InstanceTypeItemType, err error) {
 	response := DescribeInstanceTypesResponse{}
 

@@ -6,11 +6,11 @@ import (
 
 func TestImageCreationAndDeletion(t *testing.T) {
 
-	client := NewClient(TestAccessKeyId, TestAccessKeySecret)
+	client := NewTestClient()
 
 	instance, err := client.DescribeInstanceAttribute(TestInstanceId)
 	if err != nil {
-		t.Errorf("Failed to DescribeInstanceAttribute for instance %s: %v", TestInstanceId, err)
+		t.Fatalf("Failed to DescribeInstanceAttribute for instance %s: %v", TestInstanceId, err)
 	}
 
 	args := DescribeSnapshotsArgs{}

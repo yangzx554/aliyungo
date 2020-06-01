@@ -1,41 +1,47 @@
 package ecs
 
 import (
-	"github.com/denverdino/aliyungo/util"
 	"time"
+
+	"github.com/denverdino/aliyungo/common"
+	"github.com/denverdino/aliyungo/util"
 )
 
 type DescribeSnapshotsArgs struct {
-	RegionId    Region
+	RegionId    common.Region
 	InstanceId  string
 	DiskId      string
 	SnapshotIds []string //["s-xxxxxxxxx", "s-yyyyyyyyy", ..."s-zzzzzzzzz"]
-	Pagination
+	common.Pagination
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&snapshottype
 type SnapshotType struct {
 	SnapshotId     string
 	SnapshotName   string
 	Description    string
 	Progress       string
 	SourceDiskId   string
-	SourceDiskSize string //GB Why it is string
+	SourceDiskSize int
 	SourceDiskType string //enum for System | Data
 	ProductCode    string
 	CreationTime   util.ISO6801Time
 }
 
 type DescribeSnapshotsResponse struct {
-	CommonResponse
-	PaginationResult
+	common.Response
+	common.PaginationResult
 	Snapshots struct {
 		Snapshot []SnapshotType
 	}
 }
 
 // DescribeSnapshots describe snapshots
-func (client *Client) DescribeSnapshots(args *DescribeSnapshotsArgs) (snapshots []SnapshotType, pagination *PaginationResult, err error) {
-	args.validate()
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/snapshot&describesnapshots
+func (client *Client) DescribeSnapshots(args *DescribeSnapshotsArgs) (snapshots []SnapshotType, pagination *common.PaginationResult, err error) {
+	args.Validate()
 	response := DescribeSnapshotsResponse{}
 
 	err = client.Invoke("DescribeSnapshots", args, &response)
@@ -52,10 +58,12 @@ type DeleteSnapshotArgs struct {
 }
 
 type DeleteSnapshotResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // DeleteSnapshot deletes snapshot
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/snapshot&deletesnapshot
 func (client *Client) DeleteSnapshot(snapshotId string) error {
 	args := DeleteSnapshotArgs{SnapshotId: snapshotId}
 	response := DeleteSnapshotResponse{}
@@ -71,11 +79,13 @@ type CreateSnapshotArgs struct {
 }
 
 type CreateSnapshotResponse struct {
-	CommonResponse
+	common.Response
 	SnapshotId string
 }
 
 // CreateSnapshot creates a new snapshot
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/snapshot&createsnapshot
 func (client *Client) CreateSnapshot(args *CreateSnapshotArgs) (snapshotId string, err error) {
 
 	response := CreateSnapshotResponse{}
@@ -91,7 +101,7 @@ func (client *Client) CreateSnapshot(args *CreateSnapshotArgs) (snapshotId strin
 const SnapshotDefaultTimeout = 120
 
 // WaitForSnapShotReady waits for snapshot ready
-func (client *Client) WaitForSnapShotReady(regionId Region, snapshotId string, timeout int) error {
+func (client *Client) WaitForSnapShotReady(regionId common.Region, snapshotId string, timeout int) error {
 	if timeout <= 0 {
 		timeout = SnapshotDefaultTimeout
 	}
@@ -106,14 +116,14 @@ func (client *Client) WaitForSnapShotReady(regionId Region, snapshotId string, t
 			return err
 		}
 		if snapshots == nil || len(snapshots) == 0 {
-			return getECSErrorFromString("Not found")
+			return common.GetClientErrorFromString("Not found")
 		}
 		if snapshots[0].Progress == "100%" {
 			break
 		}
 		timeout = timeout - DefaultWaitForInterval
 		if timeout <= 0 {
-			return getECSErrorFromString("Timeout")
+			return common.GetClientErrorFromString("Timeout")
 		}
 		time.Sleep(DefaultWaitForInterval * time.Second)
 

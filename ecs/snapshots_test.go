@@ -6,11 +6,11 @@ import (
 
 func TestSnapshot(t *testing.T) {
 
-	client := NewClient(TestAccessKeyId, TestAccessKeySecret)
+	client := NewTestClient()
 
 	instance, err := client.DescribeInstanceAttribute(TestInstanceId)
 	if err != nil {
-		t.Errorf("Failed to DescribeInstanceAttribute for instance %s: %v", TestInstanceId, err)
+		t.Fatalf("Failed to DescribeInstanceAttribute for instance %s: %v", TestInstanceId, err)
 	}
 
 	args := DescribeSnapshotsArgs{}
@@ -29,12 +29,15 @@ func TestSnapshot(t *testing.T) {
 }
 
 func TestSnapshotCreationAndDeletion(t *testing.T) {
+	if TestQuick {
+		return
+	}
 
-	client := NewClient(TestAccessKeyId, TestAccessKeySecret)
+	client := NewTestClient()
 
 	instance, err := client.DescribeInstanceAttribute(TestInstanceId)
 	if err != nil {
-		t.Errorf("Failed to DescribeInstanceAttribute for instance %s: %v", TestInstanceId, err)
+		t.Fatalf("Failed to DescribeInstanceAttribute for instance %s: %v", TestInstanceId, err)
 	}
 
 	//Describe disk monitor data

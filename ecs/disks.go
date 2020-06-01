@@ -1,8 +1,10 @@
 package ecs
 
 import (
-	"github.com/denverdino/aliyungo/util"
 	"time"
+
+	"github.com/denverdino/aliyungo/common"
+	"github.com/denverdino/aliyungo/util"
 )
 
 // Types of disks
@@ -18,10 +20,12 @@ const (
 type DiskCategory string
 
 const (
-	DiskCategoryAll          = DiskCategory("all") //Default
-	DiskCategoryCloud        = DiskCategory("cloud")
-	DiskCategoryEphemeral    = DiskCategory("ephemeral")
-	DiskCategoryEphemeralSSD = DiskCategory("ephemeral_ssd")
+	DiskCategoryAll             = DiskCategory("all") //Default
+	DiskCategoryCloud           = DiskCategory("cloud")
+	DiskCategoryEphemeral       = DiskCategory("ephemeral")
+	DiskCategoryEphemeralSSD    = DiskCategory("ephemeral_ssd")
+	DiskCategoryCloudEfficiency = DiskCategory("cloud_efficiency")
+	DiskCategoryCloudSSD        = DiskCategory("cloud_ssd")
 )
 
 // Status of disks
@@ -39,7 +43,7 @@ const (
 
 // A DescribeDisksArgs defines the arguments to describe disks
 type DescribeDisksArgs struct {
-	RegionId           Region
+	RegionId           common.Region
 	ZoneId             string
 	DiskIds            []string
 	InstanceId         string
@@ -51,12 +55,14 @@ type DescribeDisksArgs struct {
 	Portable           *bool //optional
 	DeleteWithInstance *bool //optional
 	DeleteAutoSnapshot *bool //optional
-	Pagination
+	common.Pagination
 }
 
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/datatype&diskitemtype
 type DiskItemType struct {
 	DiskId             string
-	RegionId           Region
+	RegionId           common.Region
 	ZoneId             string
 	DiskName           string
 	Description        string
@@ -80,17 +86,18 @@ type DiskItemType struct {
 }
 
 type DescribeDisksResponse struct {
-	CommonResponse
-
-	RegionId Region
-	PaginationResult
-	Disks struct {
+	common.Response
+	common.PaginationResult
+	RegionId common.Region
+	Disks    struct {
 		Disk []DiskItemType
 	}
 }
 
 // DescribeDisks describes Disks
-func (client *Client) DescribeDisks(args *DescribeDisksArgs) (disks []DiskItemType, pagination *PaginationResult, err error) {
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/disk&describedisks
+func (client *Client) DescribeDisks(args *DescribeDisksArgs) (disks []DiskItemType, pagination *common.PaginationResult, err error) {
 	response := DescribeDisksResponse{}
 
 	err = client.Invoke("DescribeDisks", args, &response)
@@ -103,21 +110,24 @@ func (client *Client) DescribeDisks(args *DescribeDisksArgs) (disks []DiskItemTy
 }
 
 type CreateDiskArgs struct {
-	RegionId    Region
-	ZoneId      string
-	DiskName    string
-	Description string
-	Size        int
-	SnapshotId  string
-	ClientToken string
+	RegionId     common.Region
+	ZoneId       string
+	DiskName     string
+	Description  string
+	DiskCategory DiskCategory
+	Size         int
+	SnapshotId   string
+	ClientToken  string
 }
 
 type CreateDisksResponse struct {
-	CommonResponse
+	common.Response
 	DiskId string
 }
 
 // CreateDisk creates a new disk
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/disk&createdisk
 func (client *Client) CreateDisk(args *CreateDiskArgs) (diskId string, err error) {
 	response := CreateDisksResponse{}
 	err = client.Invoke("CreateDisk", args, &response)
@@ -132,10 +142,12 @@ type DeleteDiskArgs struct {
 }
 
 type DeleteDiskResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // DeleteDisk deletes disk
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/disk&deletedisk
 func (client *Client) DeleteDisk(diskId string) error {
 	args := DeleteDiskArgs{
 		DiskId: diskId,
@@ -150,10 +162,12 @@ type ReInitDiskArgs struct {
 }
 
 type ReInitDiskResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // ReInitDisk reinitizes disk
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/disk&reinitdisk
 func (client *Client) ReInitDisk(diskId string) error {
 	args := ReInitDiskArgs{
 		DiskId: diskId,
@@ -171,10 +185,12 @@ type AttachDiskArgs struct {
 }
 
 type AttachDiskResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // AttachDisk attaches disk to instance
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/disk&attachdisk
 func (client *Client) AttachDisk(args *AttachDiskArgs) error {
 	response := AttachDiskResponse{}
 	err := client.Invoke("AttachDisk", args, &response)
@@ -187,10 +203,12 @@ type DetachDiskArgs struct {
 }
 
 type DetachDiskResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // DetachDisk detaches disk from instance
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/disk&detachdisk
 func (client *Client) DetachDisk(instanceId string, diskId string) error {
 	args := DetachDiskArgs{
 		InstanceId: instanceId,
@@ -207,10 +225,12 @@ type ResetDiskArgs struct {
 }
 
 type ResetDiskResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // ResetDisk resets disk to original status
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/disk&resetdisk
 func (client *Client) ResetDisk(diskId string, snapshotId string) error {
 	args := ResetDiskArgs{
 		SnapshotId: snapshotId,
@@ -231,10 +251,12 @@ type ModifyDiskAttributeArgs struct {
 }
 
 type ModifyDiskAttributeResponse struct {
-	CommonResponse
+	common.Response
 }
 
 // ModifyDiskAttribute modifies disk attribute
+//
+// You can read doc at http://docs.aliyun.com/#/pub/ecs/open-api/disk&modifydiskattribute
 func (client *Client) ModifyDiskAttribute(args *ModifyDiskAttributeArgs) error {
 	response := ModifyDiskAttributeResponse{}
 	err := client.Invoke("ModifyDiskAttribute", &args, &response)
@@ -242,7 +264,7 @@ func (client *Client) ModifyDiskAttribute(args *ModifyDiskAttributeArgs) error {
 }
 
 // WaitForDisk waits for disk to given status
-func (client *Client) WaitForDisk(regionId Region, diskId string, status DiskStatus, timeout int) error {
+func (client *Client) WaitForDisk(regionId common.Region, diskId string, status DiskStatus, timeout int) error {
 	if timeout <= 0 {
 		timeout = DefaultTimeout
 	}
@@ -257,14 +279,14 @@ func (client *Client) WaitForDisk(regionId Region, diskId string, status DiskSta
 			return err
 		}
 		if disks == nil || len(disks) == 0 {
-			return getECSErrorFromString("Not found")
+			return common.GetClientErrorFromString("Not found")
 		}
 		if disks[0].Status == status {
 			break
 		}
 		timeout = timeout - DefaultWaitForInterval
 		if timeout <= 0 {
-			return getECSErrorFromString("Timeout")
+			return common.GetClientErrorFromString("Timeout")
 		}
 		time.Sleep(DefaultWaitForInterval * time.Second)
 	}
